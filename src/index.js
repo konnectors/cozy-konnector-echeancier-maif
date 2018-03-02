@@ -18,7 +18,7 @@ const {
 let request = requestFactory({
   cheerio: true,
   json: false,
-  // debug: true,
+  //  debug: true,
   jar: true
 });
 
@@ -44,7 +44,7 @@ connector.initSession = function(fields) {
   }).then(response => {
     const $ = response.body;
 
-    let formData = {
+    let form = {
       j_username: fields.login,
       j_password: fields.password
     };
@@ -56,10 +56,10 @@ connector.initSession = function(fields) {
     );
     for (var i in inputs) {
       const input = $(inputs[i]);
-      formData[input.attr("name")] = input.attr("value");
+      form[input.attr("name")] = input.attr("value");
     }
 
-    return { connectUrl, formData };
+    return { connectUrl, form };
   });
 };
 
@@ -70,13 +70,11 @@ connector.logIn = function(connectData) {
   return request({
     url: connectData.connectUrl,
     method: "POST",
-    formData: connectData.formData,
+    form: connectData.form,
     resolveWithFullResponse: true
   }).then(response => {
-    log("info", "Logging status code : " + response.statusCode);
-    log("info", "Page url : " + response.request.uri.pathname);
-
     // Check connect ok
+    log("info", "Logging status code : " + response.statusCode);
     return;
   });
 };
@@ -85,15 +83,18 @@ connector.getTimetablePdfUrl = function() {
   log("info", "Getting PDF Timetable url");
   return request({
     url: "https://espacepersonnel.maif.fr/avis-echeance",
-    method: "GET",
+    method: "POST",
     resolveWithFullResponse: true
   }).then(response => {
     const $ = response.body;
 
     log("info", "Page with PDF link status code : " + response.statusCode);
-    log("info", "Page url : " + response.request.uri.pathname);
+    log("info", "Page content : " + $("html"));
 
     const pdfUrl = $("button[id='download-documentation']").attr("href");
+
+    log("info", "pdfUrl : " + pdfUrl);
+
     return pdfUrl
       ? pdfUrl
       : "http://espacepersonnel.maif.fr/avisecheance/api/avis-echeance?dateAdhesion=2012-11-14&token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxLThPNy0yMzIyOSIsImF1dGgiOiIxLDgsMTAiLCJuYW1lIjoiMzcxMjU2NHAiLCJmaXJzdG5hbWUiOiJGcmFuY29pcyIsImxhc3RuYW1lIjoiREVTTUlFUiIsImVtYWlsIjoiZmRlc21pZXJAZ21haWwuY29tIiwiaWQiOiIxLThPNy0yMzIyOSIsIm51bXNvYyI6IjM3MTI1NjRwIiwiZXhwIjoxNTIwMDY3NDIwfQ.f30m1LrtGloS8v55sVTu-AiFcl4-gqPdrUxT02GsYihqli6xpJM4tOQSNEzOqpzY-5ltbLXDxCeUOynG1jtIYA";
