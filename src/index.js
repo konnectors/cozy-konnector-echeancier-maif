@@ -10,6 +10,7 @@ const pdfBillsHelper = require("./pdfBillsHelper.js");
 const {
   BaseKonnector,
   saveFiles,
+  saveBills,
   requestFactory,
   log
 } = require("cozy-konnector-libs");
@@ -28,10 +29,9 @@ function start(fields) {
     .initSession(fields)
     .then(connector.logIn)
     .then(connector.getTimetablePdfUrl)
-    .then(pdfFile => connector.saveFile(pdfFile, fields))
     .then(connector.pdfToJson)
     .then(connector.extractBills)
-    .then(connector.saveBills);
+    .then(data => connector.saveBills(data, fields));
 }
 
 connector.initSession = function(fields) {
@@ -126,34 +126,42 @@ connector.pdfToJson = function(pdfUrl) {
       log("error", "PDFParser error : " + errData.parserError);
     });
 
-    pdfParser.on("pdfParser_dataReady", pdfData => {
-      resolve(pdfData);
+    pdfParser.on("pdfParser_dataReady", json => {
+      resolve({ pdfUrl, json });
     });
   });
 };
 
-connector.extractBills = function(json) {
+connector.extractBills = function({ pdfUrl, json }) {
   return new Promise(function(resolve) {
     log("info", "Extracting Bills !");
 
-    const bills = pdfBillsHelper.getBills(json);
+    const datesAndAmounts = pdfBillsHelper.getBills(json);
 
-    log("info", "Extracting Bills Finished ! " + bills.length + " found !");
+    log(
+      "info",
+      "Extracting Bills Finished ! " + datesAndAmounts.length + " found !"
+    );
 
-    resolve(bills);
+    resolve({ pdfUrl, datesAndAmounts });
   });
 };
 
-connector.saveBills = function(bills) {
-  for (var idx in bills) {
-    log(
-      "info",
-      "Bill to create : " +
-        bills[idx].date.format("YYYY-MM-DD") +
-        " --> " +
-        bills[idx].amount
-    );
+connector.saveBills = function({ pdfUrl, datesAndAmounts }, fields) {
+  log("info", "Creating Bills with !" + pdfUrl);
+  const bills = [];
+
+  for (var idx in datesAndAmounts) {
+    bills.push({
+      amount: datesAndAmounts[idx].amount,
+      date: datesAndAmounts[idx].date.toDate(),
+      fileurl: pdfUrl,
+      filename: "Avis_echeance.pdf",
+      slug: "maif"
+    });
   }
+
+  saveBills(bills, fields, { identifiers: ["MAIF"] });
 };
 
 module.exports = connector;
