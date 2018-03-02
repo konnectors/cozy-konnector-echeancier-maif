@@ -53,8 +53,6 @@ connector.initSession = function(fields) {
       formData[input.attr("name")] = input.attr("value");
     }
 
-    formData["struts.token.name"] = "j_spring_security_checktoken";
-
     return { connectUrl, formData };
   });
 };
