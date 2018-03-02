@@ -7,7 +7,12 @@ process.env.SENTRY_DSN =
 const PDFParser = require("pdf2json");
 const pdfBillsHelper = require("./pdfBillsHelper.js");
 
-const { BaseKonnector, requestFactory, log } = require("cozy-konnector-libs");
+const {
+  BaseKonnector,
+  saveFiles,
+  requestFactory,
+  log
+} = require("cozy-konnector-libs");
 
 let request = requestFactory({
   cheerio: true,
@@ -21,11 +26,12 @@ const connector = new BaseKonnector(start);
 function start(fields) {
   return connector
     .initSession(fields)
-    .then(connectData => connector.logIn(connectData))
+    .then(connector.logIn)
     .then(connector.getTimetablePdfUrl)
-    .then(pdfURL => connector.pdfToJson(pdfURL))
-    .then(json => connector.extractBills(json))
-    .then(bills => connector.createBills(bills));
+    .then(pdfFile => connector.saveFile(pdfFile, fields))
+    .then(connector.pdfToJson)
+    .then(connector.extractBills)
+    .then(connector.saveBills);
 }
 
 connector.initSession = function(fields) {
@@ -94,6 +100,21 @@ connector.getTimetablePdfUrl = function() {
   });
 };
 
+connector.saveFile = function(pdfUrl, fields) {
+  return new Promise(function(resolve) {
+    log("info", "Saving file");
+
+    const entry = {
+      fileurl: pdfUrl,
+      filename: "Avis_echeance.pdf"
+    };
+
+    saveFiles([entry], fields);
+
+    resolve(pdfUrl);
+  });
+};
+
 connector.pdfToJson = function(pdfUrl) {
   return new Promise(function(resolve) {
     log("info", "Parsing PDF from : " + pdfUrl);
@@ -123,7 +144,7 @@ connector.extractBills = function(json) {
   });
 };
 
-connector.createBills = function(bills) {
+connector.saveBills = function(bills) {
   for (var idx in bills) {
     log(
       "info",
