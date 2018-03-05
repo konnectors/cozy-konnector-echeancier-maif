@@ -18,7 +18,7 @@ const {
 let request = requestFactory({
   cheerio: true,
   json: false,
-  //  debug: true,
+  //debug: true,
   jar: true
 });
 
@@ -81,6 +81,7 @@ connector.logIn = function(connectData) {
 
 connector.getTimetablePdfUrl = function() {
   log("info", "Getting PDF Timetable url");
+
   return request({
     url: "https://espacepersonnel.maif.fr/avis-echeance",
     method: "POST",
@@ -89,15 +90,13 @@ connector.getTimetablePdfUrl = function() {
     const $ = response.body;
 
     log("info", "Page with PDF link status code : " + response.statusCode);
-    log("info", "Page content : " + $("html"));
+    //log("info", "Page content : " + $("html"));
 
     const pdfUrl = $("button[id='download-documentation']").attr("href");
 
     log("info", "pdfUrl : " + pdfUrl);
 
-    return pdfUrl
-      ? pdfUrl
-      : "http://espacepersonnel.maif.fr/avisecheance/api/avis-echeance?dateAdhesion=2012-11-14&token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxLThPNy0yMzIyOSIsImF1dGgiOiIxLDgsMTAiLCJuYW1lIjoiMzcxMjU2NHAiLCJmaXJzdG5hbWUiOiJGcmFuY29pcyIsImxhc3RuYW1lIjoiREVTTUlFUiIsImVtYWlsIjoiZmRlc21pZXJAZ21haWwuY29tIiwiaWQiOiIxLThPNy0yMzIyOSIsIm51bXNvYyI6IjM3MTI1NjRwIiwiZXhwIjoxNTIwMDY3NDIwfQ.f30m1LrtGloS8v55sVTu-AiFcl4-gqPdrUxT02GsYihqli6xpJM4tOQSNEzOqpzY-5ltbLXDxCeUOynG1jtIYA";
+    return pdfUrl ? pdfUrl : "http://www.kahriboo.com/avis.pdf";
   });
 };
 
@@ -137,28 +136,30 @@ connector.extractBills = function({ pdfUrl, json }) {
   return new Promise(function(resolve) {
     log("info", "Extracting Bills !");
 
-    const datesAndAmounts = pdfBillsHelper.getBills(json);
+    const extractedData = pdfBillsHelper.getBills(json);
 
     log(
       "info",
-      "Extracting Bills Finished ! " + datesAndAmounts.length + " found !"
+      "Extracting Bills Finished ! " + extractedData.length + " found !"
     );
 
-    resolve({ pdfUrl, datesAndAmounts });
+    resolve({ pdfUrl, extractedData });
   });
 };
 
-connector.saveBills = function({ pdfUrl, datesAndAmounts }, fields) {
+connector.saveBills = function({ pdfUrl, extractedData }, fields) {
   log("info", "Creating Bills with !" + pdfUrl);
   const bills = [];
 
-  for (var idx in datesAndAmounts) {
+  for (var idx in extractedData) {
     bills.push({
-      amount: datesAndAmounts[idx].amount,
-      date: datesAndAmounts[idx].date.toDate(),
+      amount: extractedData[idx].amount,
+      date: extractedData[idx].date.toDate(),
       fileurl: pdfUrl,
       filename: "Avis_echeance.pdf",
-      slug: "maif"
+      slug: "maif",
+      maiftelephone: extractedData[idx].telephone,
+      maifnumsocietaire: extractedData[idx].numsocietaire
     });
   }
 

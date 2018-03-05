@@ -82,13 +82,20 @@ exports.getBills = function(json) {
 
   let dateBoxes = [];
   let amountBoxes = [];
+  let telephone, numsocietaire;
 
   for (var t in texts) {
     const text = texts[t];
     const x = text.x;
     const y = text.y;
 
-    if (text.R[0].T === "Date%20de%20pr%C3%A9l%C3%A8vement") {
+    const telephoneprefix = "T%C3%A9l%C3%A9phone%20%3A%20";
+    const numsocietaireprefix = "N%C2%B0%20de%20soci%C3%A9taire%20%3A%20";
+    if (text.R[0].T.startsWith(telephoneprefix)) {
+      telephone = decode(text.R[0].T.substring(telephoneprefix.length));
+    } else if (text.R[0].T.startsWith(numsocietaireprefix)) {
+      numsocietaire = decode(text.R[0].T.substring(numsocietaireprefix.length));
+    } else if (text.R[0].T === "Date%20de%20pr%C3%A9l%C3%A8vement") {
       dateBoxes = dateBoxes.concat(getFollowingDataBoxes(x, y, hlines, vlines));
     } else if (text.R[0].T === "Montant%20en%20euros") {
       amountBoxes = amountBoxes.concat(
@@ -119,7 +126,9 @@ exports.getBills = function(json) {
 
     const bill = {
       date,
-      amount
+      amount,
+      telephone,
+      numsocietaire
     };
     bills.push(bill);
   }
