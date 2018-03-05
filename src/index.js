@@ -18,7 +18,7 @@ const {
 let request = requestFactory({
   cheerio: true,
   json: false,
-  // debug: true,
+  //debug: true,
   jar: true
 });
 
@@ -102,21 +102,6 @@ connector.getInfos = function() {
   });
 };
 
-connector.saveFile = function(pdfUrl, fields) {
-  return new Promise(function(resolve) {
-    log("info", "Saving file");
-
-    const entry = {
-      fileurl: pdfUrl,
-      filename: "Avis_echeance.pdf"
-    };
-
-    saveFiles([entry], fields);
-
-    resolve(pdfUrl);
-  });
-};
-
 connector.pdfToJson = function([infos, accessToken]) {
   const pdfUrl = `https://espacepersonnel.maif.fr${
     infos.avisEcheance.link
@@ -141,28 +126,30 @@ connector.extractBills = function({ pdfUrl, json }) {
   return new Promise(function(resolve) {
     log("info", "Extracting Bills !");
 
-    const datesAndAmounts = pdfBillsHelper.getBills(json);
+    const extractedData = pdfBillsHelper.getBills(json);
 
     log(
       "info",
-      "Extracting Bills Finished ! " + datesAndAmounts.length + " found !"
+      "Extracting Bills Finished ! " + extractedData.length + " found !"
     );
 
-    resolve({ pdfUrl, datesAndAmounts });
+    resolve({ pdfUrl, extractedData });
   });
 };
 
-connector.saveBills = function({ pdfUrl, datesAndAmounts }, fields) {
+connector.saveBills = function({ pdfUrl, extractedData }, fields) {
   log("info", "Creating Bills with !" + pdfUrl);
   const bills = [];
 
-  for (var idx in datesAndAmounts) {
+  for (var idx in extractedData) {
     bills.push({
-      amount: datesAndAmounts[idx].amount,
-      date: datesAndAmounts[idx].date.toDate(),
+      amount: extractedData[idx].amount,
+      date: extractedData[idx].date.toDate(),
       fileurl: pdfUrl,
       filename: "Avis_echeance.pdf",
-      slug: "maif"
+      slug: "maif",
+      maiftelephone: extractedData[idx].telephone,
+      maifnumsocietaire: extractedData[idx].numsocietaire
     });
   }
 
