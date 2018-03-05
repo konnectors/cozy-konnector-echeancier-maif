@@ -9,7 +9,6 @@ const pdfBillsHelper = require("./pdfBillsHelper.js");
 
 const {
   BaseKonnector,
-  saveFiles,
   saveBills,
   requestFactory,
   log
@@ -117,12 +116,12 @@ connector.pdfToJson = function([infos, accessToken]) {
     });
 
     pdfParser.on("pdfParser_dataReady", json => {
-      resolve({ pdfUrl, json });
+      resolve({ pdfUrl, infos, json });
     });
   });
 };
 
-connector.extractBills = function({ pdfUrl, json }) {
+connector.extractBills = function({ pdfUrl, infos, json }) {
   return new Promise(function(resolve) {
     log("info", "Extracting Bills !");
 
@@ -133,11 +132,11 @@ connector.extractBills = function({ pdfUrl, json }) {
       "Extracting Bills Finished ! " + extractedData.length + " found !"
     );
 
-    resolve({ pdfUrl, extractedData });
+    resolve({ pdfUrl, infos, extractedData });
   });
 };
 
-connector.saveBills = function({ pdfUrl, extractedData }, fields) {
+connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
   log("info", "Creating Bills with !" + pdfUrl);
   const bills = [];
 
@@ -148,6 +147,7 @@ connector.saveBills = function({ pdfUrl, extractedData }, fields) {
       fileurl: pdfUrl,
       filename: "Avis_echeance.pdf",
       slug: "maif",
+      maifdateadhesion: infos.dateAdhesion,
       maiftelephone: extractedData[idx].telephone,
       maifnumsocietaire: extractedData[idx].numsocietaire
     });
