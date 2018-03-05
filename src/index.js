@@ -28,7 +28,7 @@ function start(fields) {
   return connector
     .initSession(fields)
     .then(connector.logIn)
-    .then(connector.getTimetablePdfUrl)
+    .then(connector.getInfos)
     .then(connector.pdfToJson)
     .then(connector.extractBills)
     .then(data => connector.saveBills(data, fields));
@@ -65,7 +65,7 @@ connector.initSession = function(fields) {
 
 connector.logIn = function(connectData) {
   log("info", "Logging in");
-  log("info", "Data : " + JSON.stringify(connectData));
+  log("secret", "Data : " + JSON.stringify(connectData));
 
   return request({
     url: connectData.connectUrl,
@@ -79,43 +79,33 @@ connector.logIn = function(connectData) {
   });
 };
 
-connector.getTimetablePdfUrl = function() {
-  log("info", "Getting PDF Timetable url");
-
+connector.getInfos = function() {
   return request({
-    url: "https://espacepersonnel.maif.fr/avis-echeance",
-    method: "POST",
+    url: "https://www.maif.fr/informationspersonnelles/accueilInfoPerso.action",
     resolveWithFullResponse: true
   }).then(response => {
-    const $ = response.body;
+    const accessToken = response.request.uri.hash.match(
+      /#token=(.*)&refreshToken=/
+    )[1];
 
-    log("info", "Page with PDF link status code : " + response.statusCode);
-    //log("info", "Page content : " + $("html"));
-
-    const pdfUrl = $("button[id='download-documentation']").attr("href");
-
-    log("info", "pdfUrl : " + pdfUrl);
-
-    return pdfUrl ? pdfUrl : "http://www.kahriboo.com/avis.pdf";
+    request = requestFactory({
+      cheerio: false,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    return Promise.all([
+      request("https://espacepersonnel.maif.fr/societaire/api/societaire/me"),
+      accessToken
+    ]);
   });
 };
 
-connector.saveFile = function(pdfUrl, fields) {
-  return new Promise(function(resolve) {
-    log("info", "Saving file");
-
-    const entry = {
-      fileurl: pdfUrl,
-      filename: "Avis_echeance.pdf"
-    };
-
-    saveFiles([entry], fields);
-
-    resolve(pdfUrl);
-  });
-};
-
-connector.pdfToJson = function(pdfUrl) {
+connector.pdfToJson = function([infos, accessToken]) {
+  const pdfUrl = `https://espacepersonnel.maif.fr${
+    infos.avisEcheance.link
+  }&token=${accessToken}`;
   return new Promise(function(resolve) {
     log("info", "Parsing PDF from : " + pdfUrl);
 
