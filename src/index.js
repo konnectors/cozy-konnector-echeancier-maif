@@ -4,7 +4,6 @@ process.env.SENTRY_DSN =
   process.env.SENTRY_DSN ||
   "https://1bdc9628c1724cb899ce99bb547efd19:6bd1ecd2e64e42558499c9b2a5d1a0e7@sentry.cozycloud.cc/17";
 
-const PDFParser = require("pdf2json");
 const pdfBillsHelper = require("./pdfBillsHelper.js");
 
 const {
@@ -105,34 +104,14 @@ connector.pdfToJson = function([infos, accessToken]) {
   const pdfUrl = `https://espacepersonnel.maif.fr${
     infos.avisEcheance.link
   }&token=${accessToken}`;
-  return new Promise(function(resolve) {
-    log("info", "Parsing PDF from : " + pdfUrl);
-
-    let pdfParser = new PDFParser();
-    request({ url: pdfUrl, encoding: null }).pipe(pdfParser);
-
-    pdfParser.on("pdfParser_dataError", errData => {
-      log("error", "PDFParser error : " + errData.parserError);
-    });
-
-    pdfParser.on("pdfParser_dataReady", json => {
-      resolve({ pdfUrl, infos, json });
-    });
+  return request({ url: pdfUrl, encoding: null }).then(data => {
+    return { pdfUrl, data, infos };
   });
 };
 
-connector.extractBills = function({ pdfUrl, infos, json }) {
-  return new Promise(function(resolve) {
-    log("info", "Extracting Bills !");
-
-    const extractedData = pdfBillsHelper.getBills(json);
-
-    log(
-      "info",
-      "Extracting Bills Finished ! " + extractedData.length + " found !"
-    );
-
-    resolve({ pdfUrl, infos, extractedData });
+connector.extractBills = function({ pdfUrl, data, infos }) {
+  return pdfBillsHelper.getBills(new Uint8Array(data)).then(extractedData => {
+    return { pdfUrl, infos, extractedData };
   });
 };
 
@@ -148,8 +127,8 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
       filename: "Avis_echeance.pdf",
       slug: "maif",
       maifdateadhesion: infos.dateAdhesion,
-      maiftelephone: extractedData[idx].telephone,
-      maifnumsocietaire: extractedData[idx].numsocietaire
+      maiftelephone: "09 72 72 15 15",
+      maifnumsocietaire: infos.numeroSocietaireFormate
     });
   }
 
