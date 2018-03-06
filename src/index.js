@@ -153,7 +153,7 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
     });
   }
 
-  saveBills(bills, fields, { identifiers: ["MAIF"] });
+  return saveBills(bills, fields, { identifiers: ["MAIF"] });
 };
 
 module.exports = connector;
