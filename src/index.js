@@ -127,7 +127,7 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
       filename: "Avis_echeance.pdf",
       vendor: "maif",
       maifdateadhesion: infos.dateAdhesion,
-      maiftelephone: "09 72 72 15 15",
+      maiftelephone: extractedData[idx].maiftelephone,
       maifnumsocietaire: infos.numeroSocietaireFormate
     });
   }

@@ -8,18 +8,28 @@ exports.getBills = function(pdfUrl) {
     .then(page => page.getTextContent())
     .then(content => {
       const result = cleanItems(content.items);
+      const maiftelephone = getDataAfterPrefix(result, "Téléphone : ");
       const amounts = getAmounts(result);
       return getDates(result).map((dateStr, index) => {
         const date = moment(dateStr, "D MMMM YYYY", "fr");
         const amount = parseFloat(amounts[index]);
 
         return {
+          maiftelephone,
           date,
           amount
         };
       });
     });
 };
+
+function getDataAfterPrefix(items, prefix) {
+  return items
+    .filter(item => item.content.startsWith(prefix))
+    .map(filteredItem => {
+      return filteredItem.content.substring(prefix.length);
+    })[0];
+}
 
 function cleanItems(items) {
   return items.map(item => ({
