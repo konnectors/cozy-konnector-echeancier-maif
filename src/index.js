@@ -72,7 +72,7 @@ connector.logIn = function(connectData) {
     resolveWithFullResponse: true
   }).then(response => {
     // Check connect ok
-    log("info", "Logging status code : " + response.statusCode);
+    log("debug", "Logging status code : " + response.statusCode);
     return;
   });
 };
@@ -116,7 +116,7 @@ connector.extractBills = function({ pdfUrl, data, infos }) {
 };
 
 connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
-  log("info", "Creating Bills with !" + pdfUrl);
+  log("debug", "Creating Bills with !" + pdfUrl);
   const bills = [];
 
   for (var idx in extractedData) {

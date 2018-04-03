@@ -73,34 +73,3 @@ function selectTextsByHeader(items, header) {
 function filterCellsByTop(items, top, bottom) {
   return items.filter(item => item.top <= top && item.top >= bottom);
 }
-
-// exports.getBills = function(json) {
-
-//   const bills = [];
-//   for (var idx = 0; idx < dateBoxes.length; idx++) {
-//     let dateStr = "";
-//     let amountStr = "";
-//     for (var i in texts) {
-//       const text = texts[i];
-//       if (isInTheBox(dateBoxes[idx], text.x, text.y)) {
-//         dateStr += text.R[0].T + " ";
-//       }
-//       if (isInTheBox(amountBoxes[idx], text.x, text.y)) {
-//         amountStr += text.R[0].T + " ";
-//       }
-//     }
-
-//     const date = moment(decode(dateStr), "D MMMM YYYY", "fr");
-//     const amount = parseFloat(decode(amountStr));
-
-//     const bill = {
-//       date,
-//       amount,
-//       telephone,
-//       numsocietaire
-//     };
-//     bills.push(bill);
-//   }
-
-//   return bills;
-// };

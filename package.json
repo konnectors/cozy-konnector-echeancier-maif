@@ -1,10 +1,10 @@
 {
-  "name": "cozy-konnector-maif",
+  "name": "cozy-konnector-echeancier-maif",
   "version": "1.0.0",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/konnectors/cozy-konnector-maif.git"
+    "url": "git+https://github.com/konnectors/cozy-konnector-echeancier-maif.git"
   },
   "keywords": [],
   "author": "",
