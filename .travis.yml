@@ -3,29 +3,26 @@ node_js:
   - '8'
 env:
   global:
-    # kosssi GITHUB_TOKEN
-    - secure: "Y4NN0e37W6OplWw+M0WLjIkh1yrtzNNqqWwJcKh+RRKK7ZHiShjWwdHQyzSsbxUjifh08d9BjEnbCZ6lHAfFhGbBxIWWZyyr4xqF/b4lMh+0WWXgFP03ESB9WBRFcUBso7QC4kgDtads+CZrG/0TWgruKma6iNFCV87Gbr3jznz+3HmILiYdgZtHwF4FWl4u/R7DbqTXmtHJT7WYDEeWUKUvDVdDPH+q3uzWGSlU0XU2hLf+AsnAagDpnyMD7v2XSgZRrIWPl0TMdiIGIK+/gyk6T1XBJVhx6YIoPxcB984N9oBdigMbzxLWb7zPeIicW425McbiZ0bYrDia60tFpc2EC6GDYReYGBuNnHVqAoYT0+hExlfn8zn1QITa788p7jbaJUZBD1vzg2eJG+gZM1gnfeUBoYLikEtmY3U2jgDjaWUSLX+Cwy/StZagUOG5BGg1qgxBeaR1Za1aDClHncSEcO//CjWHkd9aTxS2N61Y6IrfftrKnj92SDniSNFGsvtxrMp6dPjIqPRpfVYUJ8hTcfwMLDgUETGpafqFeFj2solVknCgPIJBMmI48syc0kUWZaalpkTNtwgui+7Ax6ERcs0U10F6mVN/xlAaL7Bw/TmQjYtgFOna36g3Fd99PY77YbDDdsuKmMTdHPSswQfgXHQ9Qiy0LzeEYnwzzyQ="
+    # doubleface GITHUB_TOKEN
+    # to generate yours : travis encrypt GITHUB_TOKEN=<your_GITHUB_TOKEN> -r konnectors/cozy-konnector-echeancier-maif
+    - secure: "WqehZaig0ITje/iwv3LB8rXR0a58X0HHbz9Ot7xacJ3xFeDp/eMHgFDaWwHDpf+dYk8lG1cwvoGGRU3GQ6Vv11DbuI6jOq52/uTEP8hcxoNPaVj/QrLkJvs0bsNIvrBwEifqIJmD3ITfC/1P7vKnIaJP2k0fVxK8wEbK1BGzPNd5eK/lNdONED2ItdgXFtaP4f/I4lYYqnHDoemRP2WJhk9CgqiY6MYXi34nrBCqH6qvBLITF0NNFXUmniL0DpSe+iRORq6xnGIUAG+tvggjVIFsK0FlXASuSiBlakIfczsq9DGsHqydxUwBUadirvqbLaZ0L59aW96j9BizhT/RyERfDxZ9DiH1aKUKWvpdtpJzpmYjO5lsnsLaG7ZTs+I6bLjzwSGhD0BV+3Iwc9EFdIs9+AcxZIIpqto+sYcWbkGJ6CR0e6LYanQJH3d+Jcwh3q9CU27O7dp19Z7JXtgiiAO7qCmM80eHpep0V/QakXiv8RrebtqoyTrUD8Yz4rbqHZEFs5x/SOXLfGfcf4CZrl9ojmOtafrAN5sqnKY7zMAWAfLOP4IihmXbdYGiQ4Dv4sTIEKUo9Z72VeCyKZgO+LXU6LIWXY3Ww9OR3TsO5M+048Q2Sq4MEAojtQaS/dRnw4y9ct6KNn3D4z9pRANnhGC0vxvms710Hw2fpQBMAbw="
 cache:
   yarn: true
   directories:
     - node_modules
 script:
-  - yarn build
   - yarn lint
+  - yarn build
 deploy:
-  - provider: pages
-    repo: konnectors/cozy-konnector-maif
+  - provider: script
+    repo: konnectors/cozy-konnector-echeancier-maif
     skip-cleanup: true
-    github-token: $GITHUB_TOKEN
-    target-branch: build
-    local-dir: ./build
+    script: yarn deploy
     on:
       branch: master
-  - provider: pages
-    repo: konnectors/cozy-konnector-maif
+  - provider: script
+    repo: konnectors/cozy-konnector-echeancier-maif
     skip-cleanup: true
-    github-token: $GITHUB_TOKEN
-    target-branch: latest
-    local-dir: ./build
+    script: DEPLOY_BRANCH=latest yarn deploy
     on:
       branch: prod
