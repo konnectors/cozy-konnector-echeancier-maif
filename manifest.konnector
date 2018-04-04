@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "name": "Maif - Echeancier",
+  "type": "node",
+  "slug": "maifecheancier",
+  "description": "description",
+  "source": "git://github.com/cozy/cozy-konnector-echeancier-maif.git",
+  "fields": {
+    "account": {
+      "doctype": "io.cozy.accounts",
+      "account_type": "maif",
+      "accountFormat": "login,password"
+    }
+  },
+  "locales": {
+    "fr": {
+      "description": "Récupère toutes vos factures",
+      "permissions": {
+        "bills": {
+          "description": "Utilisé pour sauvegarder les données de facturation"
+        },
+        "files": {
+          "description": "Utilisé pour sauvegarder les factures"
+        }
+      }
+    }
+  },
+  "permissions": {
+    "bank operations": {
+      "description": "Required to link bills to bank operations",
+      "type": "io.cozy.bank.operations"
+    },
+    "bills": {
+      "description": "Required to save the bills data",
+      "type": "io.cozy.bills"
+    },
+    "files": {
+      "description": "Required to save the bills",
+      "type": "io.cozy.files"
+    },
+    "accounts": {
+      "description": "Required to get the account's data",
+      "type": "io.cozy.accounts",
+      "verbs": ["GET"]
+    }
+  },
+  "developer": {
+    "name": "cozy",
+    "url": "https://cozy.io"
+  }
+}
