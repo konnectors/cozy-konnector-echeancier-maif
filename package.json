@@ -32,7 +32,7 @@
     "deploy": "git-directory-deploy --directory build/ --branch ${DEPLOY_BRANCH:-build} --repo=${DEPLOY_REPOSITORY:-https://$GITHUB_TOKEN@github.com/konnectors/cozy-konnector-echeancier-maif.git}"
   },
   "dependencies": {
-    "cozy-konnector-libs": "3.8.1",
+    "cozy-konnector-libs": "4.2.0",
     "pdfjs-dist": "^2.0.419"
   },
   "devDependencies": {
