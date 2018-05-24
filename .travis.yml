@@ -1,28 +1,40 @@
 language: node_js
 node_js:
-  - '8'
+- '8'
 env:
   global:
-    # doubleface GITHUB_TOKEN
-    # to generate yours : travis encrypt GITHUB_TOKEN=<your_GITHUB_TOKEN> -r konnectors/cozy-konnector-echeancier-maif
-    - secure: "WqehZaig0ITje/iwv3LB8rXR0a58X0HHbz9Ot7xacJ3xFeDp/eMHgFDaWwHDpf+dYk8lG1cwvoGGRU3GQ6Vv11DbuI6jOq52/uTEP8hcxoNPaVj/QrLkJvs0bsNIvrBwEifqIJmD3ITfC/1P7vKnIaJP2k0fVxK8wEbK1BGzPNd5eK/lNdONED2ItdgXFtaP4f/I4lYYqnHDoemRP2WJhk9CgqiY6MYXi34nrBCqH6qvBLITF0NNFXUmniL0DpSe+iRORq6xnGIUAG+tvggjVIFsK0FlXASuSiBlakIfczsq9DGsHqydxUwBUadirvqbLaZ0L59aW96j9BizhT/RyERfDxZ9DiH1aKUKWvpdtpJzpmYjO5lsnsLaG7ZTs+I6bLjzwSGhD0BV+3Iwc9EFdIs9+AcxZIIpqto+sYcWbkGJ6CR0e6LYanQJH3d+Jcwh3q9CU27O7dp19Z7JXtgiiAO7qCmM80eHpep0V/QakXiv8RrebtqoyTrUD8Yz4rbqHZEFs5x/SOXLfGfcf4CZrl9ojmOtafrAN5sqnKY7zMAWAfLOP4IihmXbdYGiQ4Dv4sTIEKUo9Z72VeCyKZgO+LXU6LIWXY3Ww9OR3TsO5M+048Q2Sq4MEAojtQaS/dRnw4y9ct6KNn3D4z9pRANnhGC0vxvms710Hw2fpQBMAbw="
+  - GH_USER_EMAIL="travis@example.org"
+  - GH_USER_NAME="cozy-bot"
+  - DEPLOY_REPOSITORY="git@github.com:konnectors/cozy-konnector-echeancier-maif.git"
 cache:
   yarn: true
   directories:
-    - node_modules
+  - node_modules
 script:
-  - yarn lint
-  - yarn build
+- yarn lint
+- yarn build
 deploy:
-  - provider: script
-    repo: konnectors/cozy-konnector-echeancier-maif
-    skip-cleanup: true
-    script: yarn deploy
-    on:
-      branch: master
-  - provider: script
-    repo: konnectors/cozy-konnector-echeancier-maif
-    skip-cleanup: true
-    script: DEPLOY_BRANCH=latest yarn deploy
-    on:
-      branch: prod
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy
+  on:
+    branch: master
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=latest yarn deploy
+  on:
+    branch: prod
+- provider: script
+  skip-cleanup: true
+  script: DEPLOY_BRANCH=build yarn deploy && yarn cozyPublish
+  on:
+    tags: true
+before_install:
+- openssl aes-256-cbc -K $encrypted_6c7763ca8891_key -iv $encrypted_6c7763ca8891_iv
+  -in github_deploy_key.enc -out /tmp/github_deploy_key -d
+- eval "$(ssh-agent -s)"
+- chmod 600 /tmp/github_deploy_key
+- ssh-add /tmp/github_deploy_key
+after_deploy:
+- rm /tmp/github_deploy_key
+- ssh-add -D
