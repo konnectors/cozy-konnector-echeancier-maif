@@ -2,6 +2,8 @@
 .account
 .token.json
 konnector-dev-config.json*
+fixtures/*
+data/*
 
 # NPM
 node_modules/

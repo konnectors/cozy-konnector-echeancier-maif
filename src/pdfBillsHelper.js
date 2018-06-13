@@ -67,7 +67,8 @@ function selectTextsByHeader(items, header) {
     )
     return selectedCells.slice(1).map(item => item.content)
   })
-  return result[0].concat(result[1])
+
+  return result.length >= 2 ? result[0].concat(result[1]) : []
 }
 
 function filterCellsByTop(items, top, bottom) {
