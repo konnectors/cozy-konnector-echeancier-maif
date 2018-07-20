@@ -77,42 +77,49 @@ connector.logIn = function(connectData) {
   })
 }
 
-connector.getInfos = function() {
-  return request({
+connector.getInfos = async function() {
+  const response = await request({
     url: 'https://www.maif.fr/informationspersonnelles/accueilInfoPerso.action',
     resolveWithFullResponse: true
-  }).then(response => {
-    const accessToken = response.request.uri.hash.match(
-      /#token=(.*)&refreshToken=/
-    )[1]
-
-    request = requestFactory({
-      cheerio: false,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-    return Promise.all([
-      request('https://espacepersonnel.maif.fr/societaire/api/societaire/me'),
-      accessToken
-    ])
   })
+  const accessToken = response.request.uri.hash.match(
+      /#token=(.*)&refreshToken=/
+  )[1]
+  request = requestFactory({
+    cheerio: false,
+    json: true,
+    jar: true
+  })
+  const respInfos = await request({uri: 'https://espacepersonnel.maif.fr/societaire/api/societaire/me',
+                                   headers: { Authorization: `Bearer ${accessToken}` }
+                                  })
+  return [ respInfos, accessToken ]
 }
 
 connector.pdfToJson = function([infos, accessToken]) {
-  const pdfUrl = `https://espacepersonnel.maif.fr${
-    infos.avisEcheance.link
-  }&token=${accessToken}`
-  return request({ url: pdfUrl, encoding: null }).then(data => {
+  if (infos.avisEcheance != null) {
+    const pdfUrl = `https://espacepersonnel.maif.fr${infos.avisEcheance.link}&token=${accessToken}`
+    return request({ url: pdfUrl, encoding: null }).then(data => {
+      return { pdfUrl, data, infos }
+    })
+  } else {
+    const pdfUrl = ''
+    const data = []
+    log('info', 'Echeancier not available')
     return { pdfUrl, data, infos }
-  })
+  }
 }
 
 connector.extractBills = function({ pdfUrl, data, infos }) {
-  return pdfBillsHelper.getBills(new Uint8Array(data)).then(extractedData => {
-    return { pdfUrl, infos, extractedData }
-  })
+  if (pdfUrl != '') {
+    return pdfBillsHelper.getBills(new Uint8Array(data)).then(extractedData => {
+      return { pdfUrl, infos, extractedData }
+    })
+  }
+  else {
+    const extractedData = []
+    return { pdfUrl, infos, extractedData}
+  }
 }
 
 connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
@@ -131,7 +138,7 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
       maifnumsocietaire: infos.numeroSocietaireFormate
     })
   }
-
+  log('debug', `${bills.length} bills found`)
   return saveBills(bills, fields, { identifiers: ['MAIF'] })
 }
 
