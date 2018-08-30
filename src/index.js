@@ -10,7 +10,8 @@ const {
   BaseKonnector,
   saveBills,
   requestFactory,
-  log
+  log,
+  errors
 } = require('cozy-konnector-libs')
 
 let request = requestFactory({
@@ -70,11 +71,26 @@ connector.logIn = function(connectData) {
     method: 'POST',
     form: connectData.form,
     resolveWithFullResponse: true
-  }).then(response => {
-    // Check connect ok
-    log('debug', 'Logging status code : ' + response.statusCode)
-    return
   })
+    .catch(err => {
+      log('error', err.message)
+      throw new Error(errors.VENDOR_DOWN)
+    })
+    .then(response => {
+      const $ = response.body
+
+      if ($('body > .maif-connect').length) {
+        log(
+          'info',
+          $('body > .maif-connect')
+            .text()
+            .trim()
+            .replace(/\t/g, '')
+            .replace(/\n/g, ' ')
+        )
+        throw new Error(errors.LOGIN_FAILED)
+      }
+    })
 }
 
 connector.getInfos = async function() {
@@ -83,22 +99,25 @@ connector.getInfos = async function() {
     resolveWithFullResponse: true
   })
   const accessToken = response.request.uri.hash.match(
-      /#token=(.*)&refreshToken=/
+    /#token=(.*)&refreshToken=/
   )[1]
   request = requestFactory({
     cheerio: false,
     json: true,
     jar: true
   })
-  const respInfos = await request({uri: 'https://espacepersonnel.maif.fr/societaire/api/societaire/me',
-                                   headers: { Authorization: `Bearer ${accessToken}` }
-                                  })
-  return [ respInfos, accessToken ]
+  const respInfos = await request({
+    uri: 'https://espacepersonnel.maif.fr/societaire/api/societaire/me',
+    headers: { Authorization: `Bearer ${accessToken}` }
+  })
+  return [respInfos, accessToken]
 }
 
 connector.pdfToJson = function([infos, accessToken]) {
   if (infos.avisEcheance != null) {
-    const pdfUrl = `https://espacepersonnel.maif.fr${infos.avisEcheance.link}&token=${accessToken}`
+    const pdfUrl = `https://espacepersonnel.maif.fr${
+      infos.avisEcheance.link
+    }&token=${accessToken}`
     return request({ url: pdfUrl, encoding: null }).then(data => {
       return { pdfUrl, data, infos }
     })
@@ -115,10 +134,9 @@ connector.extractBills = function({ pdfUrl, data, infos }) {
     return pdfBillsHelper.getBills(new Uint8Array(data)).then(extractedData => {
       return { pdfUrl, infos, extractedData }
     })
-  }
-  else {
+  } else {
     const extractedData = []
-    return { pdfUrl, infos, extractedData}
+    return { pdfUrl, infos, extractedData }
   }
 }
 
