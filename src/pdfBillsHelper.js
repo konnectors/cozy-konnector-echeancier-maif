@@ -11,6 +11,12 @@ exports.getBills = async function(pdfUrl) {
   const maiftelephone = getDataAfterPrefix(result, 'Téléphone : ')
   const amounts = getAmounts(result)
   const dates = getDates(result)
+  const annualCell = result.find(doc =>
+    doc.content.includes('La totalité de la somme de')
+  )
+  const releveCompteCell = result.find(
+    doc => doc.content === 'RELEVE DE COMPTE'
+  )
   if (dates.length) {
     return dates.map((dateStr, index) => {
       const date = moment(dateStr, 'D MMMM YYYY', 'fr')
@@ -21,7 +27,7 @@ exports.getBills = async function(pdfUrl) {
         amount
       }
     })
-  } else {
+  } else if (annualCell) {
     // try to find annual bill
     const cell = result.find(doc =>
       doc.content.includes('La totalité de la somme de')
@@ -38,6 +44,21 @@ exports.getBills = async function(pdfUrl) {
         return [{ maiftelephone, date, amount }]
       } else return []
     } else return []
+  } else if (releveCompteCell) {
+    const top = Math.round(releveCompteCell.top)
+    const amountCell = result.find(
+      doc => Math.round(doc.top) === top && doc.content.match(/ €$/)
+    )
+    const dateCell = result.find(doc => doc.content.match(/^avant le/))
+    if (amountCell && dateCell) {
+      const date = moment(dateCell.content, 'D MMMM YYYY', 'fr')
+      const amount = parseFloat(
+        amountCell.content.replace(' €', '').replace(',', '.')
+      )
+      return [{ maiftelephone, date, amount }]
+    } else {
+      return []
+    }
   }
 }
 
