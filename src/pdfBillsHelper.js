@@ -1,26 +1,44 @@
 const moment = require('moment')
 const pdfjs = require('pdfjs-dist')
 
-exports.getBills = function(pdfUrl) {
-  return pdfjs
+exports.getBills = async function(pdfUrl) {
+  const content = await pdfjs
     .getDocument(pdfUrl)
     .then(doc => doc.getPage(1))
     .then(page => page.getTextContent())
-    .then(content => {
-      const result = cleanItems(content.items)
-      const maiftelephone = getDataAfterPrefix(result, 'Téléphone : ')
-      const amounts = getAmounts(result)
-      return getDates(result).map((dateStr, index) => {
-        const date = moment(dateStr, 'D MMMM YYYY', 'fr')
-        const amount = parseFloat(amounts[index])
 
-        return {
-          maiftelephone,
-          date,
-          amount
-        }
-      })
+  const result = cleanItems(content.items)
+  const maiftelephone = getDataAfterPrefix(result, 'Téléphone : ')
+  const amounts = getAmounts(result)
+  const dates = getDates(result)
+  if (dates.length) {
+    return dates.map((dateStr, index) => {
+      const date = moment(dateStr, 'D MMMM YYYY', 'fr')
+      const amount = parseFloat(amounts[index])
+      return {
+        maiftelephone,
+        date,
+        amount
+      }
     })
+  } else {
+    // try to find annual bill
+    const cell = result.find(doc =>
+      doc.content.includes('La totalité de la somme de')
+    )
+    if (cell) {
+      // La totalité de la somme de 315,23 € sera prélevée le 8 janvier 2018 sur votre compte
+      const parsed = cell.content.match(
+        /La.*somme de (.*) € sera.*le (.*) sur votre compte/
+      )
+      if (parsed) {
+        let [amount, date] = parsed.slice(1)
+        amount = parseFloat(amount.replace(',', '.'))
+        date = moment(date, 'D MMMM YYYY', 'fr')
+        return [{ maiftelephone, date, amount }]
+      } else return []
+    } else return []
+  }
 }
 
 function getDataAfterPrefix(items, prefix) {
