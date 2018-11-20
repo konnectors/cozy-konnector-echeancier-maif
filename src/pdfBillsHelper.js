@@ -1,5 +1,6 @@
 const moment = require('moment')
 const pdfjs = require('pdfjs-dist')
+const { log } = require('cozy-konnector-libs')
 
 exports.getBills = async function(pdfUrl) {
   const content = await pdfjs
@@ -18,6 +19,7 @@ exports.getBills = async function(pdfUrl) {
     doc => doc.content === 'RELEVE DE COMPTE'
   )
   if (dates.length) {
+    log('info', `Found ${dates.length} monthly bills`)
     return dates.map((dateStr, index) => {
       const date = moment(dateStr, 'D MMMM YYYY', 'fr')
       const amount = parseFloat(amounts[index])
@@ -28,6 +30,7 @@ exports.getBills = async function(pdfUrl) {
       }
     })
   } else if (annualCell) {
+    log('info', `Found 1 annual bill with direct debit`)
     // try to find annual bill
     const cell = result.find(doc =>
       doc.content.includes('La totalité de la somme de')
@@ -45,6 +48,7 @@ exports.getBills = async function(pdfUrl) {
       } else return []
     } else return []
   } else if (releveCompteCell) {
+    log('info', `Found 1 annual bill without direct debit`)
     const top = Math.round(releveCompteCell.top)
     const amountCell = result.find(
       doc => Math.round(doc.top) === top && doc.content.match(/ €$/)
