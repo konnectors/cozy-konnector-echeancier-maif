@@ -9,6 +9,7 @@ const pdfBillsHelper = require('./pdfBillsHelper.js')
 const {
   BaseKonnector,
   saveBills,
+  saveFiles,
   requestFactory,
   log,
   errors
@@ -157,7 +158,15 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
     })
   }
   log('debug', `${bills.length} bills found`)
-  return saveBills(bills, fields, { identifiers: ['MAIF'] })
+  if (bills.length) {
+    return saveBills(bills, fields, { identifiers: ['MAIF'] })
+  } else {
+    return saveFiles(
+      [{ fileurl: pdfUrl, filename: 'Avis_echeance.pdf' }],
+      fields,
+      { identifiers: ['MAIF'] }
+    )
+  }
 }
 
 module.exports = connector

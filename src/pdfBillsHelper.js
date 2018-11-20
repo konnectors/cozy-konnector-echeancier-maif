@@ -36,7 +36,6 @@ exports.getBills = async function(pdfUrl) {
       doc.content.includes('La totalité de la somme de')
     )
     if (cell) {
-      // La totalité de la somme de 315,23 € sera prélevée le 8 janvier 2018 sur votre compte
       const parsed = cell.content.match(
         /La.*somme de (.*) € sera.*le (.*) sur votre compte/
       )
@@ -63,6 +62,8 @@ exports.getBills = async function(pdfUrl) {
     } else {
       return []
     }
+  } else {
+    log('warn', `No bills found in the pdf`)
   }
 }
 
