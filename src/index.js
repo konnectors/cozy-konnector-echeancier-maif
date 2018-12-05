@@ -5,6 +5,7 @@ process.env.SENTRY_DSN =
   'https://f419d710cd9e4e5a972a0bc095ef60ca:827312be6a8b40e8b87db9e168eed4d1@sentry.cozycloud.cc/81'
 
 const pdfBillsHelper = require('./pdfBillsHelper.js')
+const moment = require('moment')
 
 const {
   BaseKonnector,
@@ -150,7 +151,7 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
       amount: extractedData[idx].amount,
       date: extractedData[idx].date.toDate(),
       fileurl: pdfUrl,
-      filename: 'Avis_echeance.pdf',
+      filename: `Avis_echeance_${extractedData[idx].date.format('YYYY')}.pdf`,
       vendor: 'maif',
       maifdateadhesion: infos.dateAdhesion,
       maiftelephone: extractedData[idx].maiftelephone,
@@ -161,11 +162,10 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
   if (bills.length) {
     return saveBills(bills, fields, { identifiers: ['MAIF'] })
   } else {
-    return saveFiles(
-      [{ fileurl: pdfUrl, filename: 'Avis_echeance.pdf' }],
-      fields,
-      { identifiers: ['MAIF'] }
-    )
+    const filename = `Avis_echeance_${moment().format('YYYY')}.pdf`
+    return saveFiles([{ fileurl: pdfUrl, filename }], fields, {
+      identifiers: ['MAIF']
+    })
   }
 }
 
