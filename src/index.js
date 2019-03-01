@@ -15,12 +15,13 @@ const {
   log,
   errors
 } = require('cozy-konnector-libs')
-
-let request = requestFactory({
+let request = requestFactory()
+const j = request.jar()
+request = requestFactory({
   cheerio: true,
   json: false,
   //debug: true,
-  jar: true
+  jar: j
 })
 
 const connector = new BaseKonnector(start)
@@ -96,17 +97,13 @@ connector.logIn = function(connectData) {
 }
 
 connector.getInfos = async function() {
-  const response = await request({
-    url: 'https://www.maif.fr/informationspersonnelles/accueilInfoPerso.action',
-    resolveWithFullResponse: true
-  })
-  const accessToken = response.request.uri.hash.match(
-    /#token=(.*)&refreshToken=/
-  )[1]
+  const accessToken = j
+        .getCookies('https://www.maif.fr/')
+        .find(cookie => cookie.key === 'token').value
   request = requestFactory({
     cheerio: false,
     json: true,
-    jar: true
+    jar: j
   })
   const respInfos = await request({
     uri: 'https://espacepersonnel.maif.fr/societaire/api/societaire/me',
