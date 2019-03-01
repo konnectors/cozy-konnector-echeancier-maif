@@ -98,8 +98,8 @@ connector.logIn = function(connectData) {
 
 connector.getInfos = async function() {
   const accessToken = j
-        .getCookies('https://www.maif.fr/')
-        .find(cookie => cookie.key === 'token').value
+    .getCookies('https://www.maif.fr/')
+    .find(cookie => cookie.key === 'token').value
   request = requestFactory({
     cheerio: false,
     json: true,
