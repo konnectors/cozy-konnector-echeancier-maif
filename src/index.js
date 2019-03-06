@@ -12,6 +12,7 @@ const {
   saveBills,
   saveFiles,
   requestFactory,
+  retry,
   log,
   errors
 } = require('cozy-konnector-libs')
@@ -26,18 +27,25 @@ request = requestFactory({
 
 const connector = new BaseKonnector(start)
 
-function start(fields) {
-  return connector
-    .initSession(fields)
-    .then(connector.logIn)
-    .then(connector.getInfos)
-    .then(connector.pdfToJson)
-    .then(connector.extractBills)
-    .then(data => connector.saveBills(data, fields))
+async function start(fields) {
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  log('info', 'Init session')
+  const connectData = await connector.initSession(fields)
+  log('info', 'Logging in')
+  log('secret', 'Data : ' + JSON.stringify(connectData))
+  await connector.logIn(connectData)
+  log('info', 'Getting infos')
+  const connectedData = await connector.getInfos()
+  log('info', 'Waiting 3 second and getting echeancier')
+  await sleep(3000)
+  const echData = await connector.pdfToJson(connectedData)
+  log('info', 'Making bills')
+  const bills = await connector.extractBills(echData)
+  return await connector.saveBills(bills, fields)
 }
 
 connector.initSession = function(fields) {
-  log('info', 'Init session')
   const baseUrl = 'https://connect.maif.fr'
   return request({
     url: baseUrl + '/connect/s/popup/identification',
@@ -65,10 +73,7 @@ connector.initSession = function(fields) {
   })
 }
 
-connector.logIn = function(connectData) {
-  log('info', 'Logging in')
-  log('secret', 'Data : ' + JSON.stringify(connectData))
-
+connector.logIn = async function(connectData) {
   return request({
     url: connectData.connectUrl,
     method: 'POST',
@@ -112,12 +117,16 @@ connector.getInfos = async function() {
   return [respInfos, accessToken]
 }
 
-connector.pdfToJson = function([infos, accessToken]) {
+connector.pdfToJson = async function([infos, accessToken]) {
   if (infos.avisEcheance != null) {
     const pdfUrl = `https://espacepersonnel.maif.fr${
       infos.avisEcheance.link
     }&token=${accessToken}`
-    return request({ url: pdfUrl, encoding: null }).then(data => {
+    return retry(request, {
+      throw_original: true,
+      max_tries: 3,
+      args: [{ url: pdfUrl, encoding: null }]
+    }).then(data => {
       return { pdfUrl, data, infos }
     })
   } else {
@@ -128,7 +137,7 @@ connector.pdfToJson = function([infos, accessToken]) {
   }
 }
 
-connector.extractBills = function({ pdfUrl, data, infos }) {
+connector.extractBills = async function({ pdfUrl, data, infos }) {
   if (pdfUrl != '') {
     return pdfBillsHelper.getBills(new Uint8Array(data)).then(extractedData => {
       return { pdfUrl, infos, extractedData }
