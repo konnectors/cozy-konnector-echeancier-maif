@@ -5,7 +5,7 @@
   "language": "node",
   "icon": "maif.svg",
   "slug": "maifecheancier",
-  "source": "git://github.com/konnectors/cozy-konnector-echeancier-maif.git",
+  "source": "git@github.com:konnectors/cozy-konnector-echeancier-maif.git",
   "editor": "Cozy",
   "vendor_link": "maif.fr",
   "categories": [
