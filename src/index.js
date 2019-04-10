@@ -21,7 +21,7 @@ const j = request.jar()
 request = requestFactory({
   cheerio: true,
   json: false,
-  //debug: true,
+  // debug: true,
   jar: j
 })
 
@@ -166,11 +166,17 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
   }
   log('debug', `${bills.length} bills found`)
   if (bills.length) {
-    return saveBills(bills, fields, { identifiers: ['MAIF'] })
+    return saveBills(bills, fields, {
+      identifiers: ['MAIF'],
+      retry: 3,
+      validateFileContent: true
+    })
   } else {
     const filename = `Avis_echeance_${moment().format('YYYY')}.pdf`
     return saveFiles([{ fileurl: pdfUrl, filename }], fields, {
-      identifiers: ['MAIF']
+      identifiers: ['MAIF'],
+      retry: 3,
+      validateFileContent: true
     })
   }
 }
