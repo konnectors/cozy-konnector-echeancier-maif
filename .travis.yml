@@ -3,8 +3,6 @@ node_js:
 - '8'
 env:
   global:
-  - GH_USER_EMAIL="travis@example.org"
-  - GH_USER_NAME="cozy-bot"
   - DEPLOY_REPOSITORY="git@github.com:konnectors/cozy-konnector-echeancier-maif.git"
   - secure: Y/wn9KnTUVRgox0ZqFVRCs3EWss3ObBQPWqt7gQfja20+s91z6tip0lhl/G5ADq1kbBZYE+6vQ4ew0+kR2phRjOaTIgEZTk1kl/hsR551ADEIYdr9lHtzLBTE74TR/Z/FpOWNIZrzYnwZrU72xnV2AwoPX3CtLhDOBmo3Sp3/3cPTYVRw1YCv8vP6XO8u4Ik35Er2H3lPCTyhXylg1rU3GK5nyK4x32FGHnRJWVTlr7XSfFAFXOb0bugVUCCcuD8Z7sp2+Ixmbzm09Ez5IN4H1ld2zefSWkgWSeknkBzAk2W8qDeMbrXTBg6IGPe5fRYoctTqmwwU5Pm2Iqxa/T5pwcjLzB0woCn2Fny5BfJlASTL3wl52OPzjWG4W6zXukYnEOwT4bvkGbrm5TxCQURV/1q/V4rjIaADHx0le+m/IiflRrIaa2SmzxxcQIHjxoq3XACo9biRDbIf0Gpl2f7Ltg9eiC9AYsAEA9Ajk5v7tQ50qMGKtLYOpYZVMC8SY4WcFYlUkW7YEkmbk701MrFGT88A23m64Fz4SHBgU3CTCZm5I6u9qi7mzf9b4TuVTcHooBsEka+7lnsUZGnDTbK7OXLqHw+JwyS9DCKdtzIZm1GhYi43rUyWv/r0bYKV+Sntza5ChVa9GjvCUfTHzERR0kurSAGrnqii0hk057IbTo=
 cache:
