@@ -1,9 +1,9 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "name": "Maif - Echeancier",
   "type": "konnector",
   "language": "node",
-  "icon": "maif.svg",
+  "icon": "maif.png",
   "slug": "maifecheancier",
   "source": "git@github.com:konnectors/cozy-konnector-echeancier-maif.git",
   "editor": "Cozy",
