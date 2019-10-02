@@ -119,9 +119,7 @@ connector.getInfos = async function() {
 
 connector.pdfToJson = async function([infos, accessToken]) {
   if (infos.avisEcheance != null) {
-    const pdfUrl = `https://espacepersonnel.maif.fr${
-      infos.avisEcheance.link
-    }&token=${accessToken}`
+    const pdfUrl = `https://espacepersonnel.maif.fr${infos.avisEcheance.link}&token=${accessToken}`
     return retry(request, {
       throw_original: true,
       max_tries: 3,
