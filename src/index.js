@@ -88,14 +88,15 @@ connector.logIn = async function(connectData) {
       const $ = response.body
 
       if ($('body > .maif-connect').length) {
-        log(
-          'info',
-          $('body > .maif-connect')
-            .text()
-            .trim()
-            .replace(/\t/g, '')
-            .replace(/\n/g, ' ')
-        )
+        const userText = $('body > .maif-connect')
+          .text()
+          .trim()
+          .replace(/\t/g, '')
+          .replace(/\n/g, ' ')
+        log('info', userText)
+        if (userText.includes('Souhaitez-vous fusionner')) {
+          throw new Error(errors.USER_ACTION_NEEDED)
+        }
         throw new Error(errors.LOGIN_FAILED)
       }
     })
@@ -119,9 +120,7 @@ connector.getInfos = async function() {
 
 connector.pdfToJson = async function([infos, accessToken]) {
   if (infos.avisEcheance != null) {
-    const pdfUrl = `https://espacepersonnel.maif.fr${
-      infos.avisEcheance.link
-    }&token=${accessToken}`
+    const pdfUrl = `https://espacepersonnel.maif.fr${infos.avisEcheance.link}&token=${accessToken}`
     return retry(request, {
       throw_original: true,
       max_tries: 3,
@@ -169,7 +168,8 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
     return saveBills(bills, fields, {
       identifiers: ['MAIF'],
       retry: 3,
-      validateFileContent: true
+      validateFileContent: true,
+      linkBankOperations: false
     })
   } else {
     const filename = `Avis_echeance_${moment().format('YYYY')}.pdf`
