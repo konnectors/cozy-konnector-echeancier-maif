@@ -4,7 +4,9 @@ node_js:
 env:
   global:
   - DEPLOY_REPOSITORY="git@github.com:konnectors/cozy-konnector-echeancier-maif.git"
+  # REGISTRY_TOKEN(editor=cozy, app=maifecheancier)
   - secure: Y/wn9KnTUVRgox0ZqFVRCs3EWss3ObBQPWqt7gQfja20+s91z6tip0lhl/G5ADq1kbBZYE+6vQ4ew0+kR2phRjOaTIgEZTk1kl/hsR551ADEIYdr9lHtzLBTE74TR/Z/FpOWNIZrzYnwZrU72xnV2AwoPX3CtLhDOBmo3Sp3/3cPTYVRw1YCv8vP6XO8u4Ik35Er2H3lPCTyhXylg1rU3GK5nyK4x32FGHnRJWVTlr7XSfFAFXOb0bugVUCCcuD8Z7sp2+Ixmbzm09Ez5IN4H1ld2zefSWkgWSeknkBzAk2W8qDeMbrXTBg6IGPe5fRYoctTqmwwU5Pm2Iqxa/T5pwcjLzB0woCn2Fny5BfJlASTL3wl52OPzjWG4W6zXukYnEOwT4bvkGbrm5TxCQURV/1q/V4rjIaADHx0le+m/IiflRrIaa2SmzxxcQIHjxoq3XACo9biRDbIf0Gpl2f7Ltg9eiC9AYsAEA9Ajk5v7tQ50qMGKtLYOpYZVMC8SY4WcFYlUkW7YEkmbk701MrFGT88A23m64Fz4SHBgU3CTCZm5I6u9qi7mzf9b4TuVTcHooBsEka+7lnsUZGnDTbK7OXLqHw+JwyS9DCKdtzIZm1GhYi43rUyWv/r0bYKV+Sntza5ChVa9GjvCUfTHzERR0kurSAGrnqii0hk057IbTo=
+  # MATTERMOST_HOOK_URL
   - secure: bKsQtR8N0moKXyqGTii1m1tZuWfnhCH9ZBas+e8TE3V1ZG/RCHO4TvZMpfpNUsYSpEPYSQiivPtBlosE3QHPbyaas93Y/tH+5DAOZm9MWWvWMSfaiw8Qh/8vZAxJOfFkpy4kDRvOxO/X/adShF5xeOZ3BtJ1WFurRMbtTGXiVu9bHW5tOsL4MXFUIYb3bl9LYr7Sfh/shcv9Pql8sHuEV89p6lWpg87pCNQOH6cGslP6mXtvII5QPE8Dr3Mfs3EP6DyVAAQE3Tm5dTJkvQpFUMvuIDnYyLklHAuddYRruHBc99y9D7O5Pzb3Y8B1AEIvLkqGGj4ty29iZfsVvqXNLTco9iH4RYLA9/Sgk5kcYnFIAKkApIycUVsLbHH5snatXu1Mw+s49HV1H5ybIO8s1uoVp9vePDwHiCIL5vKaBT/4J/sIz/ddEWLG007pkUvQIQdLb03o/0lkLxp3VYuYz6jgAmJd17rUNmGdueZliinDPdSn8hI5+GnU//p4gRfqCUbEPx3LzM02Mja2IXtDemvFwhZ2aHWCdqRfc+j4PGmd99OGFNnifqTFc45Sqj1dPTaspBZsQcT7eylDHLUIirvHYTTrD8B7hRv7tc4Xz1esw6hHilblboPqfWrjszNgv6xU99VgQHBDK3Q6tppg4HLYq2MY/09Z3WgptqQgHsU=
 cache:
   yarn: true
@@ -15,12 +17,8 @@ branches:
   - build
   - build-debug
 script:
-- echo 'Linting' && echo -en 'travis_fold:start:lint\\r'
 - yarn lint
-- echo -en 'travis_fold:end:lint\\r'
-- echo 'Building' && echo -en 'travis_fold:start:build\\r'
 - yarn build
-- echo -en 'travis_fold:end:build\\r'
 deploy:
 - provider: script
   skip-cleanup: true
