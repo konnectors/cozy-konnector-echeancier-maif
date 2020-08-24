@@ -9,8 +9,6 @@ const moment = require('moment')
 
 const {
   BaseKonnector,
-  saveBills,
-  saveFiles,
   requestFactory,
   retry,
   log,
@@ -42,14 +40,22 @@ async function start(fields) {
   const echData = await connector.pdfToJson(connectedData)
   log('info', 'Making bills')
   const bills = await connector.extractBills(echData)
-  return await connector.saveBills(bills, fields)
+  return await connector.saveBills.bind(this)(bills, fields)
 }
 
 connector.initSession = function(fields) {
   const baseUrl = 'https://connect.maif.fr'
+  const secrets = JSON.parse(process.env.COZY_PARAMETERS || '{}').secret
+  let headers
+  if (secrets && secrets.legacyCallerKey) {
+    headers = {
+      'Legacy-Caller-Key': secrets.legacyCallerKey
+    }
+  }
   return request({
     url: baseUrl + '/connect/s/popup/identification',
     method: 'GET',
+    headers,
     resolveWithFullResponse: true
   }).then(response => {
     const $ = response.body
@@ -77,6 +83,9 @@ connector.logIn = async function(connectData) {
   return request({
     url: connectData.connectUrl,
     method: 'POST',
+    headers: {
+      'Legacy-Caller-Key': 'R3BmgJq/I7OzlLNBzLlvq/8g58SPwaX6'
+    },
     form: connectData.form,
     resolveWithFullResponse: true
   })
@@ -165,18 +174,20 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
   }
   log('debug', `${bills.length} bills found`)
   if (bills.length) {
-    return saveBills(bills, fields, {
+    return this.saveBills(bills, fields, {
       identifiers: ['MAIF'],
       retry: 3,
       validateFileContent: true,
-      linkBankOperations: false
+      linkBankOperations: false,
+      fileIdAttributes: ['date', 'maifnumsocietaire']
     })
   } else {
     const filename = `Avis_echeance_${moment().format('YYYY')}.pdf`
-    return saveFiles([{ fileurl: pdfUrl, filename }], fields, {
+    return this.saveFiles([{ fileurl: pdfUrl, filename }], fields, {
       identifiers: ['MAIF'],
       retry: 3,
-      validateFileContent: true
+      validateFileContent: true,
+      fileIdAttributes: ['date', 'maifnumsocietaire']
     })
   }
 }
