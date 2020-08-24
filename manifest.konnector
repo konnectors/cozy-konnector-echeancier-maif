@@ -78,5 +78,8 @@
     }
   },
   "banksTransactionRegExp": "\\bmaif\\b",
+  "features": [
+    "METADATA_DEDUP"
+  ],
   "manifest_version": "2"
 }
