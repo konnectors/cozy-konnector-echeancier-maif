@@ -22,7 +22,7 @@ exports.getBills = async function(pdfUrl) {
     log('info', `Found ${dates.length} monthly bills`)
     return dates.map((dateStr, index) => {
       const date = moment(dateStr, 'D MMMM YYYY', 'fr')
-      const amount = parseFloat(amounts[index])
+      const amount = parseFloat(amounts[index].replace(',', '.'))
       return {
         maiftelephone,
         date,
@@ -106,13 +106,13 @@ function selectTextsByHeader(items, header) {
   const result = firstRow.map(firstCell => {
     const selectedCells = filterCellsByTop(
       items,
-      firstCell.top + firstCell.height + 10,
-      firstCell.top - 10
+      firstCell.top + firstCell.height + 5,
+      firstCell.top - 5
     )
     return selectedCells.slice(1).map(item => item.content)
   })
 
-  return result.length >= 2 ? result[0].concat(result[1]) : []
+  return result.length >= 1 ? result[0].concat(result[1]).filter(Boolean) : []
 }
 
 function filterCellsByTop(items, top, bottom) {

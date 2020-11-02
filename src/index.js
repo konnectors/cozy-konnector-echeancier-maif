@@ -29,10 +29,10 @@ async function start(fields) {
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
   log('info', 'Init session')
+  await this.deactivateAutoSuccessfulLogin()
   const connectData = await connector.initSession(fields)
-  log('info', 'Logging in')
-  log('secret', 'Data : ' + JSON.stringify(connectData))
   await connector.logIn(connectData)
+  await this.notifySuccessfulLogin()
   log('info', 'Getting infos')
   const connectedData = await connector.getInfos()
   log('info', 'Waiting 3 second and getting echeancier')
@@ -80,14 +80,19 @@ connector.initSession = function(fields) {
 }
 
 connector.logIn = async function(connectData) {
+  let headers = {}
+  const secrets = JSON.parse(process.env.COZY_PARAMETERS || '{}').secret
+  if (secrets && secrets.legacyCallerKey) {
+    headers = {
+      'Legacy-Caller-Key': secrets.legacyCallerKey
+    }
+  }
   return request({
     url: connectData.connectUrl,
     method: 'POST',
-    headers: {
-      'Legacy-Caller-Key': 'R3BmgJq/I7OzlLNBzLlvq/8g58SPwaX6'
-    },
     form: connectData.form,
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    headers
   })
     .catch(err => {
       log('error', err.message)
@@ -179,7 +184,8 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
       retry: 3,
       validateFileContent: true,
       linkBankOperations: false,
-      fileIdAttributes: ['date', 'maifnumsocietaire']
+      fileIdAttributes: ['date', 'maifnumsocietaire'],
+      keys: ['date', 'amount', 'vendor']
     })
   } else {
     const filename = `Avis_echeance_${moment().format('YYYY')}.pdf`
