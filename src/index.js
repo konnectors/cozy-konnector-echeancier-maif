@@ -161,15 +161,23 @@ connector.extractBills = async function({ pdfUrl, data, infos }) {
   }
 }
 
-connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
+connector.saveBills = async function({ pdfUrl, infos, extractedData }, fields) {
   log('debug', 'Creating Bills with !' + pdfUrl)
   const bills = []
+
+  let nbFetchedFile = 0
+
+  function fetchFile(entry) {
+    nbFetchedFile++
+    return request(entry.fileurl)
+  }
 
   for (var idx in extractedData) {
     bills.push({
       amount: extractedData[idx].amount,
       date: extractedData[idx].date.toDate(),
       fileurl: pdfUrl,
+      fetchFile,
       filename: `Avis_echeance_${extractedData[idx].date.format('YYYY')}.pdf`,
       vendor: 'maif',
       maifdateadhesion: infos.dateAdhesion,
@@ -179,9 +187,10 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
   }
   log('debug', `${bills.length} bills found`)
   if (bills.length) {
-    return this.saveBills(bills, fields, {
+    await this.saveBills(bills, fields, {
       identifiers: ['MAIF'],
       retry: 3,
+      fetchFile,
       validateFileContent: true,
       linkBankOperations: false,
       fileIdAttributes: ['date', 'maifnumsocietaire'],
@@ -189,12 +198,34 @@ connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
     })
   } else {
     const filename = `Avis_echeance_${moment().format('YYYY')}.pdf`
-    return this.saveFiles([{ fileurl: pdfUrl, filename }], fields, {
+    await this.saveFiles([{ fileurl: pdfUrl, filename }], fields, {
       identifiers: ['MAIF'],
       retry: 3,
       validateFileContent: true,
       fileIdAttributes: ['date', 'maifnumsocietaire']
     })
+  }
+
+  if (nbFetchedFile > 0) {
+    await this.updateOrCreate(
+      [
+        {
+          type: 'releve',
+          tags: ['nouveau releve'],
+          title: `Vous avez un nouveau relevé`,
+          content: `Vous avez un nouveau relevé pour l'année ${moment().format(
+            'YYYY'
+          )}`,
+          metadata: [
+            {
+              label: 'pushnotif',
+              value: 'true'
+            }
+          ]
+        }
+      ],
+      'fr.maif.events'
+    )
   }
 }
 
