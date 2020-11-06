@@ -1,5 +1,5 @@
 {
-  "version": "1.8.0",
+  "version": "1.7.1",
   "name": "Maif - Echeancier",
   "type": "konnector",
   "language": "node",
@@ -7,7 +7,7 @@
   "slug": "maifecheancier",
   "source": "git@github.com:konnectors/cozy-konnector-echeancier-maif.git",
   "editor": "Cozy",
-  "vendor_link": "maif.fr",
+  "vendor_link": "https://www.maif.fr",
   "categories": [
     "insurance"
   ],
@@ -30,23 +30,19 @@
   ],
   "permissions": {
     "bank operations": {
-      "description": "Required to link bills to bank operations",
       "type": "io.cozy.bank.operations"
     },
     "bills": {
-      "description": "Required to save the bills data",
       "type": "io.cozy.bills"
     },
     "files": {
-      "description": "Required to save the bills",
       "type": "io.cozy.files"
     },
     "accounts": {
-      "description": "Required to get the account's data",
-      "type": "io.cozy.accounts",
-      "verbs": [
-        "GET"
-      ]
+      "type": "io.cozy.accounts"
+    },
+    "events": {
+      "type": "fr.maif.events"
     }
   },
   "developer": {
@@ -73,12 +69,37 @@
         },
         "accounts": {
           "description": "Utilisé pour obtenir les données du compte"
+        },
+        "events": {
+          "description": "Pour pouvoir vous donner des informations en temps réel"
+        }
+      }
+    },
+    "fr": {
+      "short_description": "Fetches all your bills",
+      "long_description": "Fetches all your bills",
+      "permissions": {
+        "bank operations": {
+          "description": "Required to link bills to bank operations"
+        },
+        "bills": {
+          "description": "Required to save the bills data"
+        },
+        "files": {
+          "description": "Required to save the bills"
+        },
+        "accounts": {
+          "description": "Required to get the account's data"
+        },
+        "events": {
+          "description": "Required to to give you real time information"
         }
       }
     }
   },
   "banksTransactionRegExp": "\\bmaif\\b",
   "features": [
+    "LOGIN_OK",
     "METADATA_DEDUP"
   ],
   "manifest_version": "2"
