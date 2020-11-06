@@ -23,6 +23,8 @@ request = requestFactory({
   jar: j
 })
 
+const requestOther = require('request')
+
 const connector = new BaseKonnector(start)
 
 async function start(fields) {
@@ -169,7 +171,7 @@ connector.saveBills = async function({ pdfUrl, infos, extractedData }, fields) {
 
   function fetchFile(entry) {
     nbFetchedFile++
-    return request(entry.fileurl)
+    return requestOther(entry.fileurl)
   }
 
   for (var idx in extractedData) {
@@ -210,10 +212,10 @@ connector.saveBills = async function({ pdfUrl, infos, extractedData }, fields) {
     await this.updateOrCreate(
       [
         {
-          type: 'releve',
-          tags: ['nouveau releve'],
-          title: `Vous avez un nouveau relevé`,
-          content: `Vous avez un nouveau relevé pour l'année ${moment().format(
+          type: 'avis',
+          tags: ['nouvel avis echeance'],
+          title: `Vous avez un nouvel avis d'échéance`,
+          content: `Vous avez un nouvel avis d'échéance pour l'annéee ${moment().format(
             'YYYY'
           )}`,
           metadata: [
