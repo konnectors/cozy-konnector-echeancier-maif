@@ -75,7 +75,7 @@
         }
       }
     },
-    "fr": {
+    "en": {
       "short_description": "Fetches all your bills",
       "long_description": "Fetches all your bills",
       "permissions": {
