@@ -2,7 +2,7 @@ const moment = require('moment')
 const pdfjs = require('pdfjs-dist')
 const { log } = require('cozy-konnector-libs')
 
-exports.getBills = async function(pdfUrl) {
+exports.getBills = async function (pdfUrl) {
   const content = await pdfjs
     .getDocument(pdfUrl)
     .then(doc => doc.getPage(1))

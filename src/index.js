@@ -43,7 +43,7 @@ async function start(fields) {
   return await connector.saveBills.bind(this)(bills, fields)
 }
 
-connector.initSession = function(fields) {
+connector.initSession = function (fields) {
   const baseUrl = 'https://connect.maif.fr'
   const secrets = JSON.parse(process.env.COZY_PARAMETERS || '{}').secret
   let headers
@@ -79,7 +79,7 @@ connector.initSession = function(fields) {
   })
 }
 
-connector.logIn = async function(connectData) {
+connector.logIn = async function (connectData) {
   let headers = {}
   const secrets = JSON.parse(process.env.COZY_PARAMETERS || '{}').secret
   if (secrets && secrets.legacyCallerKey) {
@@ -87,36 +87,35 @@ connector.logIn = async function(connectData) {
       'Legacy-Caller-Key': secrets.legacyCallerKey
     }
   }
-  return request({
-    url: connectData.connectUrl,
-    method: 'POST',
-    form: connectData.form,
-    resolveWithFullResponse: true,
-    headers
-  })
-    .catch(err => {
-      log('error', err.message)
-      throw new Error(errors.VENDOR_DOWN)
+  let response = null
+  try {
+    response = await request({
+      url: connectData.connectUrl,
+      method: 'POST',
+      form: connectData.form,
+      resolveWithFullResponse: true,
+      headers
     })
-    .then(response => {
-      const $ = response.body
-
-      if ($('body > .maif-connect').length) {
-        const userText = $('body > .maif-connect')
-          .text()
-          .trim()
-          .replace(/\t/g, '')
-          .replace(/\n/g, ' ')
-        log('info', userText)
-        if (userText.includes('Souhaitez-vous fusionner')) {
-          throw new Error(errors.USER_ACTION_NEEDED)
-        }
-        throw new Error(errors.LOGIN_FAILED)
-      }
-    })
+  } catch (err) {
+    log('error', err.message)
+    throw new Error(errors.VENDOR_DOWN)
+  }
+  const $ = response.body
+  if ($('body > .maif-connect').length) {
+    const userText = $('body > .maif-connect')
+      .text()
+      .trim()
+      .replace(/\t/g, '')
+      .replace(/\n/g, ' ')
+    log('info', userText)
+    if (userText.includes('Souhaitez-vous fusionner')) {
+      throw new Error(errors.USER_ACTION_NEEDED)
+    }
+    throw new Error(errors.LOGIN_FAILED)
+  }
 }
 
-connector.getInfos = async function() {
+connector.getInfos = async function () {
   const accessToken = j
     .getCookies('https://www.maif.fr/')
     .find(cookie => cookie.key === 'token').value
@@ -132,7 +131,7 @@ connector.getInfos = async function() {
   return [respInfos, accessToken]
 }
 
-connector.pdfToJson = async function([infos, accessToken]) {
+connector.pdfToJson = async function ([infos, accessToken]) {
   if (infos.avisEcheance != null) {
     const pdfUrl = `https://espacepersonnel.maif.fr${infos.avisEcheance.link}&token=${accessToken}`
     return retry(request, {
@@ -150,7 +149,7 @@ connector.pdfToJson = async function([infos, accessToken]) {
   }
 }
 
-connector.extractBills = async function({ pdfUrl, data, infos }) {
+connector.extractBills = async function ({ pdfUrl, data, infos }) {
   if (pdfUrl != '') {
     return pdfBillsHelper.getBills(new Uint8Array(data)).then(extractedData => {
       return { pdfUrl, infos, extractedData }
@@ -161,7 +160,7 @@ connector.extractBills = async function({ pdfUrl, data, infos }) {
   }
 }
 
-connector.saveBills = function({ pdfUrl, infos, extractedData }, fields) {
+connector.saveBills = function ({ pdfUrl, infos, extractedData }, fields) {
   log('debug', 'Creating Bills with !' + pdfUrl)
   const bills = []
 
