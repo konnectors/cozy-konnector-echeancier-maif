@@ -1,9 +1,3 @@
-// Force sentry DSN into environment variables
-// In the future, will be set by the stack
-process.env.SENTRY_DSN =
-  process.env.SENTRY_DSN ||
-  'https://f419d710cd9e4e5a972a0bc095ef60ca:827312be6a8b40e8b87db9e168eed4d1@sentry.cozycloud.cc/81'
-
 const pdfBillsHelper = require('./pdfBillsHelper.js')
 const moment = require('moment')
 
@@ -19,7 +13,7 @@ const j = request.jar()
 request = requestFactory({
   cheerio: true,
   json: false,
-  // debug: true,
+  debug: true,
   jar: j
 })
 
